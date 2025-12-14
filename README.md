@@ -82,11 +82,15 @@ Bybitの全USDT無期限契約ペアのOHLCVデータを定期的に収集し、
 
    - **Fetcherのログ確認**: データ取得の進捗と所要時間を確認できます。
      ```shell
-     docker-compose logs -f fetcher
+     docker-compose logs -f cmma-fetcher
      ```
    - **APIのログ確認**:
      ```shell
-     docker-compose logs -f api
+     docker-compose logs -f cmma-api
+     ```
+   - **Nginxのログ確認**:
+     ```shell
+     docker-compose logs -f cmma-nginx
      ```
 
 ## API利用方法
