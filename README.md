@@ -38,7 +38,7 @@ Bybitの全USDT無期限契約ペアのOHLCVデータを定期的に収集し、
   - デフォルトでは5分ごとにデータを更新します。
   - **注意事項**: Bybit APIのレートリミットは、IPアドレスごとに5秒間に600件のリクエストです。(`CONCURRENCY_LIMIT` 設定の参考にしてください)
     - [Rate Limit Rules | Bybit API Documentation](https://bybit-exchange.github.io/docs/v5/rate-limit)
-    - デフォルトの`.env.example`設定では、`CONCURRENCY_LIMIT=60`に設定されています。他Bybit APIを同一IPから利用している場合は、適宜調整してください。  
+    - デフォルトの`.env.example`設定では、`CONCURRENCY_LIMIT=10`に設定されています。他Bybit APIを同一IPから利用している場合は、適宜調整してください。  
 
 
 - **APIサーバー (API)**:
