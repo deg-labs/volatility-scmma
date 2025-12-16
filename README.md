@@ -110,63 +110,6 @@ Webブラウザで `http://localhost:8001/docs` にアクセスすると、Swagg
 
 価格変動率が指定した閾値を超えた銘柄の情報を取得します。
 
-### エンドポイント: `GET /volume`
-
-指定された期間における、銘柄の合計出来高ランキングを取得します。
-
-#### クエリパラメータ
-
-- `timeframe` (必須, string):
-  - 出来高の集計に使用するOHLCV足のタイムフレーム。
-  - 例: `5m`, `1h`
-
-- `period` (必須, string):
-  - 出来高を集計する期間。`h` (時間), `d` (日), `w` (週) が指定可能です。
-  - 例: `24h` (過去24時間), `7d` (過去7日間)
-
-- `sort` (任意, string, デフォルト: `volume_desc`):
-  - 結果のソート順を指定します。
-  - `volume_desc`: 期間内合計出来高の降順
-  - `volume_asc`: 期間内合計出来高の昇順
-  - `symbol_asc`: シンボル名の昇順
-
-- `limit` (任意, integer, デフォルト: `100`):
-  - 取得する最大件数。
-
-#### 使用例 (curl)
-
-1時間足 (`1h`) のデータを用いて、過去24時間 (`24h`) の出来高が多かった銘柄を降順で取得する場合:
-
-```shell
-$ curl -s "http://localhost:8001/volume?timeframe=1h&period=24h&sort=volume_desc"
-```
-
-#### 成功レスポンスの例
-
-```json
-{
-  "count": 1,
-  "data": [
-    {
-      "symbol": "BTCUSDT",
-      "total_volume": 15000.5,
-      "timeframe": "1h",
-      "period": "24h"
-    }
-  ]
-}
-```
-
-#### 注意事項
-
-このエンドポイントは、`fetcher`がDBに保存しているOHLCV履歴から出来高を計算します。
-`.env`ファイルで設定された`OHLCV_HISTORY_LIMIT`の値が、計算可能な期間の上限を決定します。
-
-例えば、`OHLCV_HISTORY_LIMIT`が`1000`（推奨設定）の場合:
-- `timeframe=1h` であれば、`1000時間`分のデータが利用可能です。
-- `timeframe=1m` の場合、`1000分`（約16.6時間）が上限となり、`period=24h`のようなリクエストはエラーを返します。
-
-
 #### クエリパラメータ
 
 - `timeframe` (必須, string):
@@ -247,6 +190,66 @@ $ curl -s "http://localhost:8001/volatility?timeframe=1d&threshold=30&direction=
   }
 }
 ```
+
+### エンドポイント: `GET /volume`
+
+指定された期間における、銘柄の合計出来高ランキングを取得します。
+
+#### クエリパラメータ
+
+- `timeframe` (必須, string):
+  - 出来高の集計に使用するOHLCV足のタイムフレーム。
+  - 例: `5m`, `1h`
+
+- `period` (必須, string):
+  - 出来高を集計する期間。`h` (時間), `d` (日), `w` (週) が指定可能です。
+  - 例: `24h` (過去24時間), `7d` (過去7日間)
+
+- `min_volume` (任意, float, デフォルト: `0`):
+  - 期間内の合計出来高での足切り額（USD）。この値より大きい出来高を持つ銘柄のみが返されます。
+  - 例: `500000000` (5億ドル)
+
+- `sort` (任意, string, デフォルト: `volume_desc`):
+  - 結果のソート順を指定します。
+  - `volume_desc`: 期間内合計出来高の降順
+  - `volume_asc`: 期間内合計出来高の昇順
+  - `symbol_asc`: シンボル名の昇順
+
+- `limit` (任意, integer, デフォルト: `100`):
+  - 取得する最大件数。
+
+#### 使用例 (curl)
+
+1時間足 (`1h`) のデータを用いて、過去24時間 (`24h`) の出来高が5億ドル以上の銘柄を、出来高が多い順に取得する場合:
+
+```shell
+$ curl -s "http://localhost:8001/volume?timeframe=1h&period=24h&min_volume=500000000&sort=volume_desc"
+```
+
+#### 成功レスポンスの例
+
+```json
+{
+  "count": 1,
+  "data": [
+    {
+      "symbol": "BTCUSDT",
+      "total_volume": 850000000.5,
+      "timeframe": "1h",
+      "period": "24h"
+    }
+  ]
+}
+```
+
+#### 注意事項
+
+このエンドポイントは、`fetcher`がDBに保存しているOHLCV履歴から出来高を計算します。
+`.env`ファイルで設定された`OHLCV_HISTORY_LIMIT`の値が、計算可能な期間の上限を決定します。
+
+例えば、`OHLCV_HISTORY_LIMIT`が`1000`（推奨設定）の場合:
+- `timeframe=1h` であれば、`1000時間`分のデータが利用可能です。
+- `timeframe=1m` の場合、`1000分`（約16.6時間）が上限となり、`period=24h`のようなリクエストはエラーを返します。
 
 ### エラーレスポンス
 
