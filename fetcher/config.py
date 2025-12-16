@@ -22,7 +22,7 @@ class AppConfig:
 
         self.timeframes = os.getenv("TIMEFRAMES", "1m,5m,15m,30m,1h,4h,1d").split(',')
         self.log_max_size_mb = int(os.getenv("LOG_MAX_SIZE_MB", "10"))
-        self.concurrency_limit = int(os.getenv("CONCURRENCY_LIMIT", "60"))
+        self.concurrency_limit = int(os.getenv("CONCURRENCY_LIMIT", "10"))
         self.fetch_interval_seconds = int(os.getenv("FETCH_INTERVAL_SECONDS", "300"))
         self.ohlcv_history_limit = int(os.getenv("OHLCV_HISTORY_LIMIT", "5"))
         self.base_url = "https://api.bybit.com"
