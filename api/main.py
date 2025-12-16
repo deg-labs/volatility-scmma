@@ -235,6 +235,7 @@ def read_volatility(
 def read_volume(
     timeframe: str = Query(..., description=f"出来高集計に使うOHLCVのタイムフレーム。有効値: {', '.join(VALID_TIMEFRAMES)}"),
     period: str = Query(..., description=f"出来高を集計する期間 (例: '24h', '7d')。有効値: {', '.join(VALID_PERIODS)}"),
+    min_volume: float = Query(None, gt=0, description="期間内の合計出来高での足切り(USD)。例: 500000000 (500M USD)"),
     sort: VolumeSortBy = Query(VolumeSortBy.volume_desc, description="結果のソート順"),
     limit: int = Query(100, gt=0, le=500, description="取得する最大件数"),
     db: Session = Depends(get_db)
@@ -279,7 +280,8 @@ def read_volume(
         timeframe=timeframe,
         period_str=period,
         sort=sort.value,
-        limit=limit
+        limit=limit,
+        min_volume=min_volume or 0
     )
 
     volume_data = [

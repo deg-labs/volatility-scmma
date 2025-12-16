@@ -98,7 +98,7 @@ def _parse_period_to_seconds(period_str: str) -> int:
     # Add more units if needed (e.g., 'min' for minutes, 's' for seconds)
     raise ValueError(f"Unsupported period unit: {period_str}")
 
-def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: str, limit: int) -> List[Any]:
+def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: str, limit: int, min_volume: float = 0) -> List[Any]:
     """
     指定された期間とタイムフレームに基づいて、各銘柄の合計出来高を取得します。
     """
@@ -128,7 +128,7 @@ def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: st
         GROUP BY
             symbol
         HAVING
-            SUM(volume) IS NOT NULL -- Exclude symbols with no volume in the period
+            SUM(volume) > :min_volume
         ORDER BY
             {order_by_clause}
         LIMIT :limit
@@ -138,7 +138,8 @@ def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: st
         query,
         {
             "start_ts_ms": start_ts_ms,
-            "limit": limit
+            "limit": limit,
+            "min_volume": min_volume
         }
     )
     return result.fetchall()
