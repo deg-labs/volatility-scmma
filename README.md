@@ -88,15 +88,15 @@ Bybitの全USDT無期限契約ペアのOHLCVデータを定期的に収集し、
 
    - **Fetcherのログ確認**: データ取得の進捗と所要時間を確認できます。
      ```shell
-     docker-compose logs -f cmma-fetcher
+     docker-compose logs -f volatility-cmma-fetcher
      ```
    - **APIのログ確認**:
      ```shell
-     docker-compose logs -f cmma-api
+     docker-compose logs -f volatility-cmma-api
      ```
    - **Nginxのログ確認**:
      ```shell
-     docker-compose logs -f cmma-nginx
+     docker-compose logs -f volatility-cmma-nginx
      ```
 
 ## API利用方法
@@ -330,17 +330,17 @@ graph TD
 
     subgraph "Proxy Layer (Public Facing)"
         direction LR
-        Nginx["cmma-nginx <br> (nginx:alpine)"]
+        Nginx["volatility-cmma-nginx <br> (nginx:alpine)"]
     end
 
     subgraph "Application Layer (Internal)"
         direction LR
-        API["cmma-api <br> (FastAPI / uvicorn)"]
+        API["volatility-cmma-api <br> (FastAPI / uvicorn)"]
     end
 
     subgraph "Data Fetcher Layer (Internal)"
          direction LR
-        Fetcher["cmma-fetcher <br> (Python Script)"]
+        Fetcher["volatility-cmma-fetcher <br> (Python Script)"]
     end
 
     subgraph "Data Storage Layer (Shared Volume)"
