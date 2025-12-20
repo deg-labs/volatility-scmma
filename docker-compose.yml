@@ -5,7 +5,7 @@ services:
     build:
       context: fetcher
       dockerfile: Dockerfile
-    container_name: cmma-fetcher
+    container_name: volatility-cmma-fetcher
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -22,7 +22,7 @@ services:
     build:
       context: api
       dockerfile: Dockerfile
-    container_name: cmma-api
+    container_name: volatility-cmma-api
     depends_on:
       - fetcher
     volumes:
@@ -42,7 +42,7 @@ services:
     build:
       context: nginx
       dockerfile: Dockerfile
-    container_name: cmma-nginx
+    container_name: volatility-cmma-nginx
     depends_on:
       - api
     ports:
