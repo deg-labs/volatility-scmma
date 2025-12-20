@@ -14,6 +14,8 @@ app = FastAPI(
     title="CMMA API",
     description="BybitのOHLCVデータから価格変動率を計算するAPI",
     version="2.0.0",
+    docs_url="/volatility/docs",
+    openapi_url="/volatility/openapi.json"
 )
 
 # --- エラーハンドリング ---
