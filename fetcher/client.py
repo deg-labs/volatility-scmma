@@ -33,6 +33,42 @@ class BybitClient:
         self.logger.info(f"合計 {len(symbols)} の取引可能なLinear銘柄を発見")
         return symbols
 
+    async def get_linear_tickers(self, session: aiohttp.ClientSession) -> List[dict]:
+        """全Linear銘柄のTicker情報を取得（出来高・価格変化率など）"""
+        url = f"{self.base_url}/v5/market/tickers"
+        tickers = []
+        self.logger.info("全Linear銘柄のTicker情報を取得中...")
+        
+        # Tickers endpoint returns data in one go usually, but might support pagination if many symbols.
+        # Bybit v5 tickers endpoint for linear supports category.
+        # It doesn't seem to require pagination for 'linear' if it fits, but let's handle basic response.
+        # Actually Bybit V5 tickers endpoint returns all if no symbol specified? 
+        # Documentation says "category=linear". 
+        
+        params = {"category": "linear"}
+        try:
+            async with session.get(url, params=params) as response:
+                response.raise_for_status()
+                data = await response.json()
+                if data["retCode"] != 0:
+                    self.logger.error(f"APIエラー(Tickers): {data['retMsg']}")
+                    return []
+                
+                result = data.get("result", {})
+                raw_list = result.get("list", [])
+                
+                # Filter for USDT perps if needed, though category=linear usually implies it + USDC
+                for item in raw_list:
+                    if item.get("symbol", "").endswith("USDT"):
+                        tickers.append(item)
+                        
+        except aiohttp.ClientError as e:
+            self.logger.error(f"Ticker情報取得リクエストエラー: {e}")
+            return []
+            
+        self.logger.info(f"合計 {len(tickers)} のTicker情報を取得")
+        return tickers
+
     async def get_kline_data(self, session: aiohttp.ClientSession, symbol: str, interval: str, limit: int = 5) -> Optional[List[List[Any]]]:
         params = {"category": "linear", "symbol": symbol, "interval": interval, "limit": limit}
         try:
