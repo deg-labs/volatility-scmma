@@ -17,7 +17,7 @@ class DataFetchService:
         self.logger = logger
         self.target_symbols_cache = []
         self.target_symbols_timestamp = None
-        self.cache_duration = timedelta(days=1)
+        self.cache_duration = timedelta(hours=self.config.target_symbols_cache_hours)
 
     async def fetch_and_store_data(self):
         start_time = time.time()
@@ -27,7 +27,7 @@ class DataFetchService:
             # 1. Update Target Cache if needed (Older than 24h or empty)
             now = datetime.now()
             if not self.target_symbols_cache or not self.target_symbols_timestamp or (now - self.target_symbols_timestamp) > self.cache_duration:
-                self.logger.info("ターゲット銘柄（出来高上位30）を選定・更新します...")
+                self.logger.info(f"ターゲット銘柄（出来高上位{self.config.top_tickers_limit}）を選定・更新します...")
                 tickers = await self.client.get_linear_tickers(session)
                 
                 if not tickers:
@@ -37,10 +37,10 @@ class DataFetchService:
                         self.logger.error("利用可能なキャッシュがなく、処理を中断します。")
                         return
                 else:
-                    # Sort by turnover24h (descending) and take top 30
+                    # Sort by turnover24h (descending) and take top configured amount
                     try:
                         tickers.sort(key=lambda x: float(x.get("turnover24h", 0)), reverse=True)
-                        top_tickers = tickers[:30]
+                        top_tickers = tickers[:self.config.top_tickers_limit]
                         self.target_symbols_cache = [t["symbol"] for t in top_tickers]
                         self.target_symbols_timestamp = now
                         

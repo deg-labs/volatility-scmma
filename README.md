@@ -27,6 +27,8 @@
 
 # cmma (crypto market metrics api)
 
+これは、元々のcmmaの軽量版である **scmma** です。データ転送量を最小限に抑えることに焦点を当てています。
+
 Bybitの全USDT無期限契約ペアのOHLCVデータを定期的に収集し、指定した条件に基づいて価格変動率の高い銘柄を問い合わせできるAPIサーバーです。
 現状FR金利の極端な偏りを抽出もAPI化検討していますがFR金利の場合はAPI Limit制限問題で別IP(NAT)から建てれた方が良いかもしれないというのもあり、現状はOHLCVデータの収集とAPI提供に特化しています。  
 
@@ -67,6 +69,8 @@ Bybitの全USDT無期限契約ペアのOHLCVデータを定期的に収集し、
 
    - `TIMEFRAMES`: 取得するOHLCVのタイムフレーム（例: `1m,5m,1h`）
    - `FETCH_INTERVAL_SECONDS`: データ取得サイクルの間隔（秒）
+   - `TOP_TICKERS_LIMIT`: 出来高上位銘柄の選定数。`fetcher`がBybitから取得する銘柄の数を制限します。
+   - `TARGET_SYMBOLS_CACHE_HOURS`: 出来高上位銘柄のリストをキャッシュする時間（時間単位）。この時間が経過すると、再度Bybitから銘柄リストを取得し直します。
    - `OHLCV_HISTORY_LIMIT`: DBに保持する各銘柄のローソク足の最大数。この値は、`/volatility`エンドポイントの`offset`の最大値や、`/volume`エンドポイントで遡って集計できる期間の上限を決定します。Bybit APIの上限である`1000`に設定することを推奨します。
    - `CONCURRENCY_LIMIT`: Bybit APIへの同時リクエスト数
 

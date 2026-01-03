@@ -25,6 +25,8 @@ class AppConfig:
         self.concurrency_limit = int(os.getenv("CONCURRENCY_LIMIT", "10"))
         self.fetch_interval_seconds = int(os.getenv("FETCH_INTERVAL_SECONDS", "300"))
         self.ohlcv_history_limit = int(os.getenv("OHLCV_HISTORY_LIMIT", "5"))
+        self.top_tickers_limit = int(os.getenv("TOP_TICKERS_LIMIT", "30"))
+        self.target_symbols_cache_hours = int(os.getenv("TARGET_SYMBOLS_CACHE_HOURS", "24"))
         self.base_url = "https://api.bybit.com"
 
 def setup_logging(config: AppConfig) -> logging.Logger:
