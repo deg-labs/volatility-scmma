@@ -14,8 +14,9 @@ app = FastAPI(
     title="CMMA API",
     description="BybitのOHLCVデータから価格変動率を計算するAPI",
     version="2.0.0",
-    docs_url="/volatility/docs",
-    openapi_url="/volatility/openapi.json"
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
 )
 
 # --- エラーハンドリング ---
@@ -73,7 +74,7 @@ VALID_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w", "1M"]
 def read_volatility(
     timeframe: str = Query(..., description=f"タイムフレームを指定。有効値: {', '.join(VALID_TIMEFRAMES)}"),
     price_threshold: float = Query(..., gt=0, description="価格変動率の閾値(%)。絶対値で比較されます。例: 5.0", alias="threshold"),
-    offset: int = Query(1, gt=0, description="何本前のローソク足と比較するか。デフォルトは1 (1本前)。"),
+    offset: int = Query(1, gt=0, le=500, description="何本前のローソク足と比較するか。デフォルトは1 (1本前)。最大500。"),
     direction: Direction = Query(Direction.both, description="変動方向をフィルタ"),
     sort: SortBy = Query(SortBy.volatility_desc, description="結果のソート順"),
     limit: int = Query(100, gt=0, le=500, description="取得する最大件数"),
