@@ -2,20 +2,44 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import List, Dict, Any
 
+# テーブル名のホワイトリスト。timeframe -> テーブル名 のマップ。
+# ここに存在しないtimeframeはクエリを組み立てず例外(fail-closed)とする。
+TIMEFRAME_TABLE_MAP = {
+    "1m": "ohlcv_1m",
+    "5m": "ohlcv_5m",
+    "15m": "ohlcv_15m",
+    "30m": "ohlcv_30m",
+    "1h": "ohlcv_1h",
+    "4h": "ohlcv_4h",
+    "1d": "ohlcv_1d",
+    "1w": "ohlcv_1w",
+    "1M": "ohlcv_1M",
+}
+
+def _resolve_table_name(timeframe: str) -> str:
+    """ホワイトリストmapからテーブル名を解決する。未知の値はfail-closedで例外を投げる。"""
+    try:
+        return TIMEFRAME_TABLE_MAP[timeframe]
+    except KeyError:
+        raise ValueError(f"Unsupported timeframe: {timeframe}")
+
 def get_symbols_exceeding_threshold(db: Session, timeframe: str, price_threshold: float, offset: int, direction: str, sort: str, limit: int):
     """
     指定されたタイムフレームと閾値に基づいて、価格変動率が大きい銘柄のリストを取得します。
     offsetを使用して、何本前の足と比較するかを指定できます。
     """
-    table_name = f"ohlcv_{timeframe}"
+    table_name = _resolve_table_name(timeframe)
 
-    # ソート順をSQLのORDER BY句に変換
+    # ソート順をSQLのORDER BY句に変換 (fail-closed)
     sort_map = {
         "volatility_desc": "volatility_pct DESC",
         "volatility_asc": "volatility_pct ASC",
         "symbol_asc": "lc.symbol ASC",
     }
-    order_by_clause = sort_map.get(sort, "volatility_pct DESC")
+    try:
+        order_by_clause = sort_map[sort]
+    except KeyError:
+        raise ValueError(f"Unsupported sort: {sort}")
 
     # SQLクエリを構築
     # WITH句を使って、各シンボルごとに最新の足と、指定されたoffset前の足を取得する
@@ -102,7 +126,7 @@ def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: st
     """
     指定された期間とタイムフレームに基づいて、各銘柄の合計出来高を取得します。
     """
-    table_name = f"ohlcv_{timeframe}"
+    table_name = _resolve_table_name(timeframe)
 
     # Convert period string to seconds, then to milliseconds for timestamp comparison
     period_seconds = _parse_period_to_seconds(period_str)
@@ -110,7 +134,7 @@ def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: st
     start_ts = end_ts - timedelta(seconds=period_seconds)
     start_ts_ms = int(start_ts.timestamp() * 1000)
 
-    # Sort order mapping
+    # Sort order mapping (fail-closed)
     sort_map = {
         "volume_desc": "total_volume DESC",
         "volume_asc": "total_volume ASC",
@@ -118,7 +142,10 @@ def get_volume_for_period(db: Session, timeframe: str, period_str: str, sort: st
         "turnover_asc": "total_turnover ASC",
         "symbol_asc": "symbol ASC",
     }
-    order_by_clause = sort_map.get(sort, "total_volume DESC")
+    try:
+        order_by_clause = sort_map[sort]
+    except KeyError:
+        raise ValueError(f"Unsupported sort: {sort}")
 
     # Having clause based on min_volume_target
     having_clause = ""

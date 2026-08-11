@@ -61,7 +61,8 @@ class SortBy(str, Enum):
     volatility_asc = "volatility_asc"
     symbol_asc = "symbol_asc"
 
-VALID_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w", "1M"]
+# 有効なタイムフレームは crud のホワイトリストmapから導出し、検証とテーブル名解決を常に同期させる
+VALID_TIMEFRAMES = list(crud.TIMEFRAME_TABLE_MAP.keys())
 
 # --- エンドポイント ---
 @app.get(
@@ -86,15 +87,18 @@ def read_volatility(
             headers={"X-Error-Code": "INVALID_TIMEFRAME"},
         )
     
-    results = crud.get_symbols_exceeding_threshold(
-        db=db, 
-        timeframe=timeframe, 
-        price_threshold=price_threshold,
-        offset=offset,
-        direction=direction.value,
-        sort=sort.value,
-        limit=limit
-    )
+    try:
+        results = crud.get_symbols_exceeding_threshold(
+            db=db, 
+            timeframe=timeframe, 
+            price_threshold=price_threshold,
+            offset=offset,
+            direction=direction.value,
+            sort=sort.value,
+            limit=limit
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e), headers={"X-Error-Code": "INVALID_INPUT"})
     
     # crudからの結果をレスポンスモデルに変換
     volatility_data = [
@@ -219,15 +223,18 @@ def read_volume(
             headers={"X-Error-Code": "INSUFFICIENT_HISTORY"}
         )
 
-    results = crud.get_volume_for_period(
-        db=db,
-        timeframe=timeframe,
-        period_str=period,
-        sort=sort.value,
-        limit=limit,
-        min_volume=min_volume or 0,
-        min_volume_target=min_volume_target.value,
-    )
+    try:
+        results = crud.get_volume_for_period(
+            db=db,
+            timeframe=timeframe,
+            period_str=period,
+            sort=sort.value,
+            limit=limit,
+            min_volume=min_volume or 0,
+            min_volume_target=min_volume_target.value,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e), headers={"X-Error-Code": "INVALID_INPUT"})
 
     volume_data = [
         schemas.VolumeData(
